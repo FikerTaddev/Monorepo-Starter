@@ -1,201 +1,175 @@
-# 📦 Monorepo Boilerplate
+# Monorepo Platform — Control Plane Boilerplate
 
-A scalable monorepo architecture for building multiple products using shared infrastructure, Turbo, Next.js, and NestJS.
+## Overview
+
+This repository provides a monorepo structure with a control plane system and modular service architecture.
 
 ---
 
-# 🧱 Architecture Overview
+## Architecture
 
+```
 apps/
-  web/        → Next.js runtime shell
-  api/        → NestJS runtime shell
+  api/           → sample backend service
+  web/           → sample frontend service
+
+  admin-api/     → control plane backend
+  admin-web/     → control plane frontend
 
 packages/
-  core/       → system infrastructure (auth, db, logging, http, config)
-  products/   → business domains (product-a, product-b, etc.)
-  shared/     → pure utilities, types, schemas
-  ui/         → shared design system
-  config/     → tsconfig, eslint, shared tooling
+  shared utilities and libraries
+```
 
 ---
 
-# 🧠 Core Principles
+## System Design
 
-## 1. Apps are runtime shells
-- apps/web = UI runtime (Next.js)
-- apps/api = backend runtime (NestJS)
-- No business logic in apps/
+The system is divided into two layers.
 
-## 2. Products are domain modules
-Each product is self-contained:
+### Control Plane
 
-packages/products/product-a/
-  backend/
-  frontend/
+* admin-api
+* admin-web
 
-Products are NOT standalone apps — they plug into runtime apps.
+Responsible for system management functions including users, roles, permissions, logs, and service control.
 
-## 3. Core is infrastructure only
-packages/core/
+### Application Layer
 
-Contains:
-- auth
-- database client
-- logging
-- HTTP utilities
-- config
+* api
+* web
 
-No business logic allowed.
-
-## 4. Shared is pure logic only
-packages/shared/
-
-Contains:
-- types
-- DTOs
-- validation schemas
-- helper functions
-
-No framework dependencies.
-
-## 5. UI is global design system
-packages/ui/
-
-Reusable UI components shared across all products.
+Base applications used as starting points for custom implementations.
 
 ---
 
-# ⚙️ Installation
+## Admin System Responsibilities
 
-npm install
+* user management
+* role and permission management
+* system orchestration
+* audit logging
+* service monitoring
 
 ---
 
-# 🚀 Running the project
+## Core Concepts
+
+### Services as entities
+
+Each application is treated as an independent service.
+
+### Central control
+
+The admin system provides a unified interface for managing system state.
+
+### Separation of concerns
+
+Control logic is isolated from application logic.
+
+---
+
+## Tech Stack
+
+* TurboRepo with pnpm
+* NestJS for backend services
+* Next.js for frontend applications
+* JWT authentication
+* PostgreSQL database
+
+---
+
+## Features
+
+* authentication
+* role-based access control
+* user management
+* service management
+* audit logs
+
+---
+
+## Environment Setup
+
+Each application contains its own environment configuration:
+
+```
+apps/api/.env
+apps/web/.env
+apps/admin-api/.env
+apps/admin-web/.env
+```
+
+---
 
 ## Development
-npm run dev
 
-Starts:
-- Next.js (web)
-- NestJS (api)
-- all packages via Turbo
+Run all services:
 
-## Build
-npm run build
+```
+pnpm dev
+```
 
----
+Run a specific service:
 
-# 🧪 Adding a new product
-
-## 1. Create structure
-packages/products/product-x/
-  backend/
-  frontend/
+```
+pnpm --filter admin-api dev
+pnpm --filter web dev
+```
 
 ---
 
-## 2. Backend module (NestJS)
+## Adding Applications
 
-import { Module } from "@nestjs/common";
+New applications can be added under the apps directory.
 
-@Module({
-  controllers: [],
-  providers: []
-})
-export class ProductXModule {}
+Typical structure:
 
----
+```
+apps/<app-name>/
+  src/
+  package.json
+```
 
-## 3. Register in API
-
-import { ProductXModule } from "@repo/products/product-x/backend";
-
-@Module({
-  imports: [ProductXModule]
-})
-export class AppModule {}
+Each application is independent and follows the same runtime structure.
 
 ---
 
-## 4. Use frontend module
+## Adding Shared Packages
 
-import { ProductXFeature } from "@repo/products/product-x/frontend";
+Reusable code is placed in the packages directory.
 
----
+```
+packages/<package-name>/
+  src/
+  package.json
+```
 
-# 🔗 Path Aliases (tsconfig.base.json)
-
-{
-  "paths": {
-    "@repo/core/*": ["packages/core/*"],
-    "@repo/products/*": ["packages/products/*"],
-    "@repo/shared/*": ["packages/shared/*"],
-    "@repo/ui/*": ["packages/ui/*"]
-  }
-}
+Packages are imported across applications.
 
 ---
 
-# ⚡ Turbo Commands
+## Contributing
 
-npm run dev      → start all apps
-npm run build    → build all apps
-npm run lint     → lint workspace (if configured)
+### Bug fixes
 
----
+* create a branch
+* reproduce the issue
+* apply minimal fix
+* commit with descriptive message
 
-# 🧱 Dependency Rules
+### Shared packages
 
-products → core + shared + ui  
-apps → products + core + shared + ui  
-core → shared only  
-shared → nothing  
-ui → shared only  
+Add reusable logic inside packages and avoid application-specific code.
 
 ---
 
-# 🧠 Mental Model
+## Rules
 
-Apps = runtime engines  
-Products = business modules  
-Core = infrastructure layer  
-Shared = pure logic  
-UI = design system  
-
----
-
-# 🚨 Common Issues
-
-## Module not found (@repo/*)
-npm install
-
-## Turbo not running
-Check turbo script exists:
-"dev": "turbo run dev"
-
-## Nested git repo error
-rm -rf path/to/folder/.git
-
-## Build issues
-npm run build
+* no cross application runtime coupling
+* shared logic must go through packages
+* each service must run independently
+* keep changes isolated
 
 ---
 
-# 📈 Scaling Strategy
 
-This setup supports:
-- multiple independent products
-- shared infrastructure evolution
-- fast onboarding of new apps
-- future microservice extraction if needed
-
----
-
-# 🧭 Recommended Next Steps
-
-- add feature flags per product
-- database isolation per product
-- CI/CD pipeline (GitHub Actions)
-- API gateway layer (optional)
-- versioned shared packages
